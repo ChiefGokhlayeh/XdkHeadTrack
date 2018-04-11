@@ -67,13 +67,6 @@ static const LedAnimator_Step_T IdleSteps[] =
 static const LedAnimator_Animation_T IdleAnimation =
 { IdleSteps, 2, LED_ANIMATOR_LOOP_CONTINUE };
 
-static inline Rotation_QuaternionData_T MultiplyQuaternion(
-		Rotation_QuaternionData_T q1, Rotation_QuaternionData_T q2);
-static inline Rotation_QuaternionData_T ConjugateQuaternion(
-		Rotation_QuaternionData_T q1);
-static inline Rotation_QuaternionData_T ScaleQuaternion(
-		Rotation_QuaternionData_T q1, float factor);
-static inline float NormQuaternion(Rotation_QuaternionData_T q1);
 static void RunPollRotationLoop(void* param1);
 
 static const CmdProcessor_T* AppCmdProcessor = NULL;
