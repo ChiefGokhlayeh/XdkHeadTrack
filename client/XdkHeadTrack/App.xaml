@@ -1,0 +1,25 @@
+﻿<Application x:Class="XdkHeadTrack.App"
+			xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:local="clr-namespace:XdkHeadTrack"
+			xmlns:vm="clr-namespace:XdkHeadTrack.View.Model"
+			xmlns:conv="clr-namespace:XdkHeadTrack.View.Converter"
+			xmlns:net="clr-namespace:System.Net;assembly=System"
+			StartupUri="View/MainWindow.xaml">
+	<Application.Resources>
+		<ResourceDictionary>
+			<vm:MainViewModel x:Key="MainViewModel"/>
+			<conv:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+			<conv:NegateVector3DConverter x:Key="NegateVector3DConverter"/>
+			<conv:IPAddressConverter x:Key="IPAddressConverter"/>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Indigo.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.GroupBox.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

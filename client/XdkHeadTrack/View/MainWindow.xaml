@@ -1,0 +1,164 @@
+﻿<Window x:Class="XdkHeadTrack.View.MainWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+		xmlns:local="clr-namespace:XdkHeadTrack"
+		xmlns:utils="clr-namespace:XdkHeadTrack.Utils"
+		xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+		xmlns:mat="http://materialdesigninxaml.net/winfx/xaml/themes"
+		Title="XDK Rotation Proxy" Height="750" Width="1025"
+		TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+		TextElement.FontWeight="Regular"
+		TextElement.FontSize="13"
+		TextOptions.TextFormattingMode="Ideal" 
+		TextOptions.TextRenderingMode="Auto"
+		Background="{DynamicResource MaterialDesignPaper}"
+		FontFamily="{DynamicResource MaterialDesignFont}"
+		DataContext="{StaticResource MainViewModel}">
+	<i:Interaction.Triggers>
+		<i:EventTrigger EventName="Closing">
+			<i:InvokeCommandAction Command="{Binding ClosingCommand}" />
+		</i:EventTrigger>
+	</i:Interaction.Triggers>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+		</Grid.RowDefinitions>
+		<GroupBox  Grid.Row="0" Header="Connection Settings" Style="{DynamicResource MaterialDesignGroupBox}" mat:ShadowAssist.ShadowDepth="Depth2">
+			<Grid Grid.Row="0">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="auto"/>
+					<ColumnDefinition/>
+					<ColumnDefinition Width="auto"/>
+					<ColumnDefinition Width="auto"/>
+					<ColumnDefinition Width="auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" Margin="5,0,0,0" Text="COM-Port:" VerticalAlignment="Center"/>
+				<ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="5,5,0,5" SelectedItem="{Binding SerialPortNameToUse}" ItemsSource="{Binding SerialPortNames}" IsEnabled="{Binding Path=IsPortConnected, Converter={StaticResource InverseBooleanConverter}}" VerticalAlignment="Center"/>
+				<ToggleButton Grid.Row="0" Grid.Column="3" Margin="5" Command="{Binding ToggleConnectSerialCommand}" Style="{DynamicResource MaterialDesignSwitchToggleButton}" VerticalAlignment="Center"/>
+				<Button Grid.Row="0" Grid.Column="4" Margin="5" Command="{Binding RefreshPortsCommand}" Style="{DynamicResource MaterialDesignFloatingActionButton}" Height="32" Width="32" VerticalAlignment="Center">
+					<Canvas Width="24" Height="24">
+						<Path Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" Fill="{DynamicResource PrimaryHueDarkForegroundBrush}" />
+					</Canvas>
+				</Button>
+				<TextBlock Grid.Row="1" Grid.Column="0" Margin="5,0,0,0" VerticalAlignment="Center" Text="Target Endpoint"/>
+					<TextBox Grid.Row="1" Grid.Column="1" Margin="5,5,0,5" VerticalAlignment="Center" Text="{Binding Path=UdpSender.TargetIPAddress, Converter={StaticResource IPAddressConverter}}" utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text" mat:HintAssist.Hint="IP Address or Domain Name of the OpenTrack UDP-Server"/>
+				<TextBox Grid.Row="1" Grid.Column="2" Margin="5" Width="150" VerticalAlignment="Center" Text="{Binding Path=UdpSender.TargetPort}" utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text" mat:HintAssist.Hint="Port Number"/>
+				<ToggleButton Grid.Row="1" Grid.Column="3" Margin="5" VerticalAlignment="Center" Command="{Binding ToggleConnectUdpCommand}"/>
+			</Grid>
+		</GroupBox>
+
+		<GroupBox Grid.Row="1" Style="{DynamicResource MaterialDesignGroupBox}" Header="Tracker Preview" mat:ShadowAssist.ShadowDepth="Depth2">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Viewport3D Grid.Row="0" Margin="5">
+					<Viewport3D.Camera>
+						<PerspectiveCamera Position="0, 0, 0" LookDirection="{Binding ElementName=cameraTranslate, Converter={StaticResource NegateVector3DConverter}}">
+							<PerspectiveCamera.Transform>
+								<Transform3DGroup>
+									<TranslateTransform3D x:Name="cameraTranslate" OffsetX="15" OffsetY="0" OffsetZ="0"/>
+									<RotateTransform3D>
+										<RotateTransform3D.Rotation>
+											<AxisAngleRotation3D x:Name="cameraRotateY" Axis="0 1 0"/>
+										</RotateTransform3D.Rotation>
+									</RotateTransform3D>
+								</Transform3DGroup>
+							</PerspectiveCamera.Transform>
+						</PerspectiveCamera>
+					</Viewport3D.Camera>
+
+					<ModelVisual3D>
+						<ModelVisual3D.Content>
+							<DirectionalLight Direction = "-1,-1,-1">
+							</DirectionalLight>
+						</ModelVisual3D.Content>
+					</ModelVisual3D>
+
+					<ModelVisual3D Content="{Binding TestModel}">
+						<ModelVisual3D.Transform>
+							<Transform3DGroup>
+								<ScaleTransform3D ScaleX="0.1" ScaleY="0.1" ScaleZ="0.1"/>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<AxisAngleRotation3D Axis="0,0,1" Angle="-90"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<AxisAngleRotation3D Axis="1,0,0" Angle="90"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<AxisAngleRotation3D Axis="0,1,0" Angle="-90"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<AxisAngleRotation3D Axis="0,0,1" Angle="90"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<QuaternionRotation3D Quaternion="{Binding Xdk.CalibratedRotation}"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<AxisAngleRotation3D Axis="1,0,0" Angle="-90"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<RotateTransform3D>
+									<RotateTransform3D.Rotation>
+										<AxisAngleRotation3D Axis="0,1,0" x:Name="modelRotateY"/>
+									</RotateTransform3D.Rotation>
+								</RotateTransform3D>
+								<TranslateTransform3D OffsetY="0"/>
+							</Transform3DGroup>
+						</ModelVisual3D.Transform>
+					</ModelVisual3D>
+				</Viewport3D>
+
+				<Grid Grid.Row="1">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<TextBlock Grid.Row="0" Grid.Column="0" Margin="5,0,0,0" TextWrapping="Wrap" Text="Camera Rotation:" VerticalAlignment="Center"/>
+					<Slider Grid.Row="0" Grid.Column="1" Margin="5" LargeChange="10" SmallChange="1" Minimum="-180" Maximum="180" Value="{Binding ElementName=cameraRotateY, Path=Angle}" VerticalAlignment="Center"/>
+					<TextBox Grid.Row="0" Grid.Column="2" Margin="0,5" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding ElementName=cameraRotateY, Path=Angle, StringFormat={}{0:0.00}}" VerticalAlignment="Center" utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text"/>
+					<TextBlock Grid.Row="0" Grid.Column="3" Margin="0,5,5,5" Text="°" VerticalAlignment="Center"/>
+
+					<TextBlock Grid.Row="1" Grid.Column="0" Margin="5,0,0,0" TextWrapping="Wrap" Text="Camera Elevation:" VerticalAlignment="Center"/>
+					<Slider Grid.Row="1" Grid.Column="1" Margin="5" LargeChange="10" SmallChange="1" Minimum="-20" Maximum="20" Value="{Binding ElementName=cameraTranslate, Path=OffsetY}" VerticalAlignment="Center"/>
+					<TextBox Grid.Row="1" Grid.Column="2" Margin="0,5" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding ElementName=cameraTranslate, Path=OffsetY, StringFormat={}{0:0.00}}" VerticalAlignment="Center" utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text"/>
+					<TextBlock Grid.Row="1" Grid.Column="3" Margin="0,5,5,5" Text="units" VerticalAlignment="Center"/>
+
+					<TextBlock Grid.Row="2" Grid.Column="0" Margin="5,0,0,0" TextWrapping="Wrap" Text="Model Base Rotation:" VerticalAlignment="Center"/>
+					<Slider Grid.Row="2" Grid.Column="1" Margin="5" LargeChange="10" SmallChange="1" Minimum="-180" Maximum="180" Value="{Binding ElementName=modelRotateY, Path=Angle}" VerticalAlignment="Center"/>
+					<TextBox Grid.Row="2" Grid.Column="2" Margin="0,5" TextAlignment="Center" TextWrapping="Wrap" Text="{Binding ElementName=modelRotateY, Path=Angle, StringFormat={}{0:0.00}}" VerticalAlignment="Center" utils:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text"/>
+					<TextBlock Grid.Row="2" Grid.Column="3" Margin="0,5,5,5" Text="°" VerticalAlignment="Center"/>
+				</Grid>
+			</Grid>
+		</GroupBox>
+	</Grid>
+</Window>
