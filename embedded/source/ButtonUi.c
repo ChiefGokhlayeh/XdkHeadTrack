@@ -39,26 +39,8 @@ static void HandleButton1Event(void* param1, uint32_t status);
 
 static void HandleButton1Interrupt(uint32_t status)
 {
-	Retcode_T rc = RETCODE_OK;
-
-	switch (status)
-	{
-	case BSP_XDK_BUTTON_PRESS:
-		break;
-	case BSP_XDK_BUTTON_RELEASE:
-		rc = HeadTrack_Calibrate();
-		break;
-	default:
-		break;
-	}
-	/* FIXME: Currently the IRQ Prio is set to high (by XDK internals), we
-	 * therefore cannot invoke any FreeRTOS calls. This includes the
-	 * functionallity of the CmdProcessor. We therefore have to call the target
-	 * function directly from IRQ-context (ugh!).
-	 *
-	 * Retcode_T rc = CmdProcessor_Enqueue((CmdProcessor_T*) CmdProcessor,
-	 * HandleButton1Event, NULL, status);
-	 */
+	Retcode_T rc = CmdProcessor_EnqueueFromIsr((CmdProcessor_T*) CmdProcessor,
+	HandleButton1Event, NULL, status);
 	if (RETCODE_OK != rc)
 	{
 		Retcode_RaiseErrorFromIsr(rc);
