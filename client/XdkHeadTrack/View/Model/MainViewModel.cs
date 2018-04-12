@@ -41,7 +41,7 @@ namespace XdkHeadTrack.View.Model
 		public string SerialPortNameToUse
 		{
 			get { return _serialPortNameToUse; }
-			private set { _serialPortNameToUse = value; NotifyPropertyChanged(); }
+			set { _serialPortNameToUse = value; NotifyPropertyChanged(); }
 		}
 
 		public bool IsUdpSenderActive
