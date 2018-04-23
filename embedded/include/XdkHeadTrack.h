@@ -28,6 +28,14 @@
 #define APP_CMD_PROCESSOR_STACK		(UINT16_C(700))
 #define APP_CMD_PROCESSOR_QUEUE_LEN	(UINT32_C(10))
 
+enum HeadTrack_CommunicationMode_E
+{
+	HEAD_TRACK_COMMUNICATION_MODE_SERIAL, HEAD_TRACK_COMMUNICATION_MODE_BLE,
+
+	HEAD_TRACK_COMMUNICATION_MODE_MAX
+};
+typedef enum HeadTrack_CommunicationMode_E HeadTrack_CommunicationMode_T;
+
 void HeadTrack_InitSystem(void* cmdProcessorHandle, uint32_t param2);
 
 Retcode_T HeadTrack_Run(void);
@@ -35,5 +43,8 @@ Retcode_T HeadTrack_Run(void);
 Retcode_T HeadTrack_Stop(void);
 
 Retcode_T HeadTrack_Calibrate(void);
+
+Retcode_T HeadTrack_ChangeCommunicationMode(
+		HeadTrack_CommunicationMode_T commMode);
 
 #endif /* XDKHEADTRACK_H_ */

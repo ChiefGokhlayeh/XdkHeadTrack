@@ -37,12 +37,15 @@
 
 #include "XdkSensorHandle.h"
 
+#include "XdkBleUi.h"
 #include "XdkButtonUi.h"
 #include "XdkLedAnimator.h"
 #include "XdkLogger.h"
 
 #define APP_POLL_ROTATION_TASK_STACK_SIZE	(UINT32_C(300))
 #define APP_POLL_ROTATION_TASK_PRIO			(UINT32_C(4))
+
+#define HEAD_TRACK_DEFAULT_COMMUNICATION_MODE	(HEAD_TRACK_COMMUNICATION_MODE_SERIAL)
 
 static const LedAnimator_Step_T InitializingSteps[] =
 {
@@ -52,12 +55,19 @@ static const LedAnimator_Step_T InitializingSteps[] =
 static const LedAnimator_Animation_T InitializingAnimation =
 { InitializingSteps, 2, LED_ANIMATOR_LOOP_CONTINUE };
 
-static const LedAnimator_Step_T TrackingSteps[] =
+static const LedAnimator_Step_T TrackingOverSerialSteps[] =
 {
 { true, false, false, 1 } };
 
-static const LedAnimator_Animation_T TrackingAnimation =
-{ TrackingSteps, 1, LED_ANIMATOR_LOOP_HOLD_LAST };
+static const LedAnimator_Animation_T TrackingOverSerialAnimation =
+{ TrackingOverSerialSteps, 1, LED_ANIMATOR_LOOP_HOLD_LAST };
+
+static const LedAnimator_Step_T TrackingOverBleSteps[] =
+{
+{ false, true, false, 1 } };
+
+static const LedAnimator_Animation_T TrackingOverBleAnimation =
+{ TrackingOverBleSteps, 1, LED_ANIMATOR_LOOP_HOLD_LAST };
 
 static const LedAnimator_Step_T IdleSteps[] =
 {
@@ -68,12 +78,65 @@ static const LedAnimator_Animation_T IdleAnimation =
 { IdleSteps, 2, LED_ANIMATOR_LOOP_CONTINUE };
 
 static void RunPollRotationLoop(void* param1);
+static inline Retcode_T SendViaBle(const Rotation_QuaternionData_T* rawRotation,
+bool useForCalibration);
+static inline Retcode_T SendViaSerial(
+		const Rotation_QuaternionData_T* rawRotation, bool useForCalibration);
+static Retcode_T UpdateLedAnimationToMode(void);
 
 static const CmdProcessor_T* AppCmdProcessor = NULL;
 static TaskHandle_t PollRotationTask = NULL;
 static SemaphoreHandle_t PollRotationRunSignal = NULL;
 static bool IsPollRotationEnabled = false;
 static bool IsCalibrationRequested = false;
+static HeadTrack_CommunicationMode_T CommunicationMode =
+HEAD_TRACK_DEFAULT_COMMUNICATION_MODE;
+
+static inline Retcode_T SendViaBle(const Rotation_QuaternionData_T* rawRotation,
+bool useForCalibration)
+{
+	BleUi_TrackingData_T bleData;
+	bleData.W = rawRotation->w;
+	bleData.X = rawRotation->x;
+	bleData.Y = rawRotation->y;
+	bleData.Z = rawRotation->z;
+	bleData.UseForCalibration = useForCalibration;
+	return BleUi_SendTrackingData(&bleData);
+}
+
+static Retcode_T UpdateLedAnimationToMode(void)
+{
+	Retcode_T rc = RETCODE_OK;
+	switch (CommunicationMode)
+	{
+	case HEAD_TRACK_COMMUNICATION_MODE_SERIAL:
+		rc = LedAnimator_PlayAnimation(&TrackingOverSerialAnimation);
+		break;
+	case HEAD_TRACK_COMMUNICATION_MODE_BLE:
+		rc = LedAnimator_PlayAnimation(&TrackingOverBleAnimation);
+		break;
+	default:
+		rc = RETCODE(RETCODE_SEVERITY_ERROR, RETCODE_INVALID_PARAM);
+		break;
+	}
+	return rc;
+}
+
+static inline Retcode_T SendViaSerial(
+		const Rotation_QuaternionData_T* rawRotation, bool useForCalibration)
+{
+	if (useForCalibration)
+	{
+		printf(">>CALI: %f %f %f %f\n", rawRotation->w, rawRotation->x,
+				rawRotation->y, rawRotation->z);
+	}
+	else
+	{
+		printf(">>QUAT: %f %f %f %f\n", rawRotation->w, rawRotation->x,
+				rawRotation->y, rawRotation->z);
+	}
+	return RETCODE_OK;
+}
 
 static void RunPollRotationLoop(void* param1)
 {
@@ -94,14 +157,38 @@ static void RunPollRotationLoop(void* param1)
 		if (IsCalibrationRequested)
 		{
 			IsCalibrationRequested = false;
-			printf(">>CALI: %f %f %f %f\n", rawRotation.w, rawRotation.x,
-					rawRotation.y, rawRotation.z);
+			switch (CommunicationMode)
+			{
+			case HEAD_TRACK_COMMUNICATION_MODE_SERIAL:
+				rc = SendViaSerial(&rawRotation, true);
+				break;
+			case HEAD_TRACK_COMMUNICATION_MODE_BLE:
+				rc = SendViaBle(&rawRotation, true);
+				break;
+			default:
+				Retcode_RaiseError(
+						RETCODE(RETCODE_SEVERITY_FATAL,
+								RETCODE_INCONSITENT_STATE));
+				break;
+			}
 		}
 
 		if (RETCODE_OK == rc)
 		{
-			printf(">>QUAT: %f %f %f %f\n", rawRotation.w, rawRotation.x,
-					rawRotation.y, rawRotation.z);
+			switch (CommunicationMode)
+			{
+			case HEAD_TRACK_COMMUNICATION_MODE_SERIAL:
+				SendViaSerial(&rawRotation, false);
+				break;
+			case HEAD_TRACK_COMMUNICATION_MODE_BLE:
+				rc = SendViaBle(&rawRotation, false);
+				break;
+			default:
+				Retcode_RaiseError(
+						RETCODE(RETCODE_SEVERITY_FATAL,
+								RETCODE_INCONSITENT_STATE));
+				break;
+			}
 			vTaskDelayUntil(&pxPreviousWakeTime, pdMS_TO_TICKS(20));
 		}
 
@@ -136,6 +223,11 @@ void HeadTrack_InitSystem(void* cmdProcessorHandle, uint32_t param2)
 	if (RETCODE_OK == rc)
 	{
 		rc = ButtonUi_Initialize(AppCmdProcessor);
+	}
+
+	if (RETCODE_OK == rc)
+	{
+		rc = BleUi_Initialize(AppCmdProcessor);
 	}
 
 	if (RETCODE_OK == rc)
@@ -189,7 +281,7 @@ Retcode_T HeadTrack_Run(void)
 
 	if (RETCODE_OK == rc)
 	{
-		rc = LedAnimator_PlayAnimation(&TrackingAnimation);
+		rc = UpdateLedAnimationToMode();
 	}
 
 	return rc;
@@ -211,6 +303,21 @@ Retcode_T HeadTrack_Calibrate(void)
 	Retcode_T rc = RETCODE_OK;
 
 	IsCalibrationRequested = true;
+
+	return rc;
+}
+
+Retcode_T HeadTrack_ChangeCommunicationMode(
+		HeadTrack_CommunicationMode_T commMode)
+{
+	Retcode_T rc = RETCODE_OK;
+
+	CommunicationMode = commMode;
+
+	if (IsPollRotationEnabled)
+	{
+		rc = UpdateLedAnimationToMode();
+	}
 
 	return rc;
 }

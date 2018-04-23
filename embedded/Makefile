@@ -21,6 +21,7 @@ export BCDS_XDK_INCLUDES = \
 
 #List all the application source file under variable BCDS_XDK_APP_SOURCE_FILES in a similar pattern as below
 export BCDS_XDK_APP_SOURCE_FILES = \
+	$(BCDS_APP_SOURCE_DIR)/BleUi.c \
 	$(BCDS_APP_SOURCE_DIR)/ButtonUi.c \
 	$(BCDS_APP_SOURCE_DIR)/HeadTrack.c \
 	$(BCDS_APP_SOURCE_DIR)/LedAnimator.c \
