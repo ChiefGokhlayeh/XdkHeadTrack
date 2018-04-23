@@ -1,6 +1,8 @@
 # XdkHeadTrack
 Using the Bosch [XDK](http://xdk.io) Orientation-Sensor, a PC software and [OpenTrack](https://github.com/opentrack/opentrack) to stream head tracking data from the sensor board to the final application.
 
+![App Screenshot](https://raw.githubusercontent.com/FreeGeronimo/xdkheadtrack/e8a70925ab15098b361935bb97fb0e85a72c8a07/assets/screenshot1.png)
+
 ## Builds
 |Build|Status|
 | :-: | :--: |
