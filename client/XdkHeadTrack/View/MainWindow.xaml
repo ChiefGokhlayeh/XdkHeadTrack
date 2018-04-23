@@ -8,7 +8,7 @@
 		xmlns:utils="clr-namespace:XdkHeadTrack.Utils"
 		xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 		xmlns:mat="http://materialdesigninxaml.net/winfx/xaml/themes"
-		Title="XDK Rotation Proxy" Height="750" Width="1025"
+		Title="XDK Head Track" Height="750" Width="1025"
 		TextElement.Foreground="{DynamicResource MaterialDesignBody}"
 		TextElement.FontWeight="Regular"
 		TextElement.FontSize="13"
