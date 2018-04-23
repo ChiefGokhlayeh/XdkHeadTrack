@@ -248,6 +248,7 @@ namespace XdkHeadTrack.View.Model
 				_toggleSerialTask = Task.Run(() => { DisconnectSerial(); });
 			else
 				_toggleSerialTask = Task.Run(() => { ConnectSerial(portName); });
+			CommandManager.InvalidateRequerySuggested();
 			await _toggleSerialTask;
 			_toggleSerialTask = null;
 			CommandManager.InvalidateRequerySuggested();
