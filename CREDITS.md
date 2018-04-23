@@ -1,0 +1,1 @@
+![Coordinates Icon](https://www.flaticon.com/free-icon/coordinates_136941) Icon made by [Smashicons](https://www.flaticon.com/authors/smashicons) from www.flaticon.com
