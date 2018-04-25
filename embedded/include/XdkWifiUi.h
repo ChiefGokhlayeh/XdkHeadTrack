@@ -1,4 +1,4 @@
-/* Copyright 2018 Andreas Baulig
+/* Copyright 2018 freeg
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -18,17 +18,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef XDKAPP_H_
-#define XDKAPP_H_
+#ifndef XDKWIFIUI_H_
+#define XDKWIFIUI_H_
 
-enum AppModuleId_E
+#include "BCDS_Basics.h"
+#include "BCDS_Retcode.h"
+
+#include "BCDS_CmdProcessor.h"
+
+#pragma pack(push, 1)
+struct WifiUi_TrackingData_S
 {
-	APP_MODULE_MAIN = 1,
-	APP_MODULE_HEADTRACK,
-	APP_MODULE_LEDANIMATOR,
-	APP_MODULE_BUTTONUI,
-	APP_MODULE_BLEUI,
-	APP_MODULE_WIFIUI,
+	float W;
+	float X;
+	float Y;
+	float Z;
+	bool UseForCalibration;
 };
+#pragma pack(pop)
+typedef struct WifiUi_TrackingData_S WifiUi_TrackingData_T;
 
-#endif /* XDKAPP_H_ */
+Retcode_T WifiUi_Initialize(const CmdProcessor_T* cmdProcessor);
+
+Retcode_T WifiUi_SendTrackingData(const WifiUi_TrackingData_T* data);
+
+Retcode_T WifiUi_Deinitialize(void);
+
+#endif /* XDKWIFIUI_H_ */

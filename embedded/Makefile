@@ -27,6 +27,7 @@ export BCDS_XDK_APP_SOURCE_FILES = \
 	$(BCDS_APP_SOURCE_DIR)/LedAnimator.c \
 	$(BCDS_APP_SOURCE_DIR)/Logger.c \
 	$(BCDS_APP_SOURCE_DIR)/Main.c \
+	$(BCDS_APP_SOURCE_DIR)/WifiUi.c \
 
 .PHONY: clean	debug release flash_debug_bin flash_release_bin
 
