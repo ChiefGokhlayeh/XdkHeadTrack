@@ -4,10 +4,10 @@ Using the Bosch [XDK](http://xdk.io) Orientation-Sensor, a PC software and [Open
 ![App Screenshot](https://raw.githubusercontent.com/FreeGeronimo/XdkHeadTrack/e8a70925ab15098b361935bb97fb0e85a72c8a07/assets/screenshot1.png)
 
 ## Builds
-|Build|Status|
-| :-: | :--: |
-| *master* | [![Build status](https://ci.appveyor.com/api/projects/status/0s3i5e2m659m7kgj/branch/master?svg=true)](https://ci.appveyor.com/project/FreeGeronimo/xdkheadtrack/branch/master) |
-| *current* | [![Build status](https://ci.appveyor.com/api/projects/status/0s3i5e2m659m7kgj?svg=true)](https://ci.appveyor.com/project/FreeGeronimo/xdkheadtrack) |
+| Branch | Client Status | Embedded Status |
+| :-: | :-: | :-: |
+| [master](https://github.com/FreeGeronimo/XdkHeadTrack/tree/master) | [![Build status](https://ci.appveyor.com/api/projects/status/0s3i5e2m659m7kgj/branch/master?svg=true)](https://ci.appveyor.com/project/FreeGeronimo/xdkheadtrack/branch/master) | [![Build Status](https://travis-ci.org/FreeGeronimo/XdkHeadTrack.svg?branch=master)](https://travis-ci.org/FreeGeronimo/XdkHeadTrack) |
+| *current* | [![Build status](https://ci.appveyor.com/api/projects/status/0s3i5e2m659m7kgj?svg=true)](https://ci.appveyor.com/project/FreeGeronimo/xdkheadtrack) | \<no-job\> |
 
 ## Requirements
 To use this project you'll need:
