@@ -1,0 +1,29 @@
+version: build-#{build}
+environment:
+  REPO_RELEASE_VERSION: v0.1.0
+image: Visual Studio 2017
+configuration:
+- Debug
+- Release
+clone_depth: 1
+before_build:
+- cmd: nuget restore client
+build:
+  project: client/XdkHeadTrack.sln
+  verbosity: minimal
+after_build:
+- ps: "$releaseDir = $env:APPVEYOR_BUILD_FOLDER + \"\\client\\XdkHeadTrack\\bin\\Release\"\n$debugDir = $env:APPVEYOR_BUILD_FOLDER + \"\\client\\XdkHeadTrack\\bin\\Debug\"\n$outputFile = \"XdkHeadTrack.zip\"\nif((Test-Path -Path $releaseDir)) {\n    & \"7z\" \"a\" $outputFile ($releaseDir + \"\\*.*\")\n} \nelseif((Test-Path -Path $debugDir)) {\n    & \"7z\" \"a\" $outputFile ($debugDir + \"\\*.*\")\n}\nelse {\n	echo \"Could not find build folders: \" + $releaseDir + \" or \" + $debugDir \n}"
+artifacts:
+- path: XdkHeadTrack.zip
+  name: bin_all
+deploy:
+- provider: GitHub
+  tag: $(REPO_RELEASE_VERSION)
+  auth_token:
+    secure: jnh6iWtDsO5aExqsmiD3xeI7hC+sDCMFAFJyQIZrXd9T4RaHBJaNEKb1eyumDhy8
+  artifact: bin_all
+  draft: true
+  prerelease: false
+  force_update: true
+  on:
+    branch: master
