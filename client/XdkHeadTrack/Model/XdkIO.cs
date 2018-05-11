@@ -75,14 +75,11 @@ namespace XdkHeadTrack.Model
 
 		public void DisconnectSerial()
 		{
-			Task.Run(() =>
+			lock (_portSyncLock)
 			{
-				lock (_portSyncLock)
-				{
-					if (_port.IsOpen)
-						_port.Close();
-				}
-			});
+				if (_port.IsOpen)
+					_port.Close();
+			}
 			NotifyPropertyChanged("IsSerialConnected");
 		}
 

@@ -41,7 +41,7 @@ namespace XdkHeadTrack.View.Model
 		public string SerialPortNameToUse
 		{
 			get { return _serialPortNameToUse; }
-			private set { _serialPortNameToUse = value; NotifyPropertyChanged(); }
+			set { _serialPortNameToUse = value; NotifyPropertyChanged(); }
 		}
 
 		public bool IsUdpSenderActive
@@ -248,6 +248,7 @@ namespace XdkHeadTrack.View.Model
 				_toggleSerialTask = Task.Run(() => { DisconnectSerial(); });
 			else
 				_toggleSerialTask = Task.Run(() => { ConnectSerial(portName); });
+			CommandManager.InvalidateRequerySuggested();
 			await _toggleSerialTask;
 			_toggleSerialTask = null;
 			CommandManager.InvalidateRequerySuggested();
