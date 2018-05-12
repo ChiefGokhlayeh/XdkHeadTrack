@@ -1,4 +1,4 @@
-language c
+language: c
 install:
 - sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa -y
 - sudo apt-get update
