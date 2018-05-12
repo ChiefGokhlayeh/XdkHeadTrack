@@ -15,7 +15,7 @@ deploy:
   file: embedded/debug/XdkHeadTrack.bin
   on:
     repo: FreeGeronimo/XdkHeadTrack
-    tag: true
+    tags: true
 env:
   global:
   - secure: LlHm9pMSTwwoRO4pP4zk5Xh8svunZXh+kS0EvQs+Ll6yRqaAEDa/lkKYe+WD/3lykIiwk7bgjeqpM/GOvWhH3yHEjHmQn4xBWyygrBMVESEmYrt4gURPcQAsuohd0axCueAXTwxRXxy9fxJ/4IW/CdoiKj1i6aFbX7lv/aCS5vsgy/lyZP0GJ5nm1+OuWX6b1aBhJnDqfZm2HSgTO/gRgVFlW/pJ+ziwL/wEivonR0Mz6TUvxZuxfkzQM6i18heKt020OQ3IIarDAqUTgqOxWc/LfSDpFhPWqRBIiKtZNj5OxX/4FYbwYyNMOGH3KTukeZCmY3EJKFnyQP0ol0zSxE9d6/W9kCdgs8qP7H21pmMQrEq6zgNp1g6HCZ2kFFn9co1MSSbe3nc0IAFPD/YYHIY5FBP4Lso3yybyI8tNMJBM6kgdCQJ07wokCYbS3g2etKyMV3BQXIFq/Mg7PLTEVDxoswQQ6asJkJ8vwt0xWFNOAcxsJOVdYWE6LRjwZfI8kiUgGSCufxuQzFAyQ5lqOM84BLyPRexZr0DlFBO2xuLYXZ8cjz4tSdXUjQKC6sDxlu0dCDTShfOlgEb//RdYzF1VcBBg4IwivJ0g8fz3xA3KKDt7zffY/wiCcQi4TT1JTJDyrYNFIhb1E6IyfNp0ALvhUDcpt6l9sIyQjN4arac=
