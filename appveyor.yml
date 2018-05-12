@@ -1,6 +1,4 @@
 version: build-#{build}
-environment:
-  REPO_RELEASE_VERSION: v0.1.0
 image: Visual Studio 2017
 configuration:
 - Debug
@@ -18,7 +16,6 @@ artifacts:
   name: bin_all
 deploy:
 - provider: GitHub
-  tag: $(REPO_RELEASE_VERSION)
   auth_token:
     secure: jnh6iWtDsO5aExqsmiD3xeI7hC+sDCMFAFJyQIZrXd9T4RaHBJaNEKb1eyumDhy8
   artifact: bin_all
@@ -27,3 +24,4 @@ deploy:
   force_update: true
   on:
     branch: master
+    appveyor_repo_tag: true
