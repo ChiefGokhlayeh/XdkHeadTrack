@@ -34,12 +34,36 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#define WIFI_UI_CONNECT_TIMEOUT	(pdMS_TO_TICKS(30000))
+enum
+{
+	WIFIUI_MODE_OPEN = 0,
+	WIFIUI_MODE_WEP,
+	WIFIUI_MODE_WPA,
+	WIFIUI_MODE_WPSPB,
+	WIFIUI_MODE_WPSPIN
+};
+
+#define WIFIUI_CONNECT_TIMEOUT	(pdMS_TO_TICKS(30000))
+
+#ifndef APP_WIFI_MODE
+/* To be set in makefile */
+#define APP_WIFI_MODE	(WIFIUI_MODE_WPSPB)
+#endif
+#ifndef APP_WIFI_SSID
+/* To be set in makefile */
+#define APP_WIFI_SSID		("SSID")
+#endif
+#ifndef APP_WIFI_PASSPHRASE
+/* To be set in makefile */
+#define APP_WIFI_PASSPHRASE	("PASSWORD")
+#endif
 
 static const CmdProcessor_T* CmdProcessor;
 static SemaphoreHandle_t ConnectionStatusChangedSignal;
+static SemaphoreHandle_t NetworkStatusChangedSignal;
 
 static inline Retcode_T CreateSignal(SemaphoreHandle_t* signal);
+static void HanldeNetworkConfigEvent(NetworkConfig_IpStatus_T event);
 static void HandleWlanConnectEvent(WlanConnect_Status_T event);
 static Retcode_T SetupWifi(void);
 static inline Retcode_T WaitForSignal(SemaphoreHandle_t signal,
@@ -86,6 +110,20 @@ static void HandleWlanConnectEvent(WlanConnect_Status_T event)
 	}
 }
 
+static void HanldeNetworkConfigEvent(NetworkConfig_IpStatus_T event)
+{
+	switch (event)
+	{
+	case NETWORKCONFIG_IPV4_ACQUIRED:
+	case NETWORKCONFIG_IPV6_ACQUIRED:
+	case NETWORKCONFIG_IP_NOT_ACQUIRED:
+		(void) xSemaphoreGive(NetworkStatusChangedSignal);
+		break;
+	default:
+		break;
+	}
+}
+
 static Retcode_T SetupWifi(void)
 {
 	Retcode_T rc = RETCODE_OK;
@@ -94,23 +132,62 @@ static Retcode_T SetupWifi(void)
 
 	if (RETCODE_OK == rc)
 	{
-		rc = NetworkConfig_SetIpDhcp(NULL);
+		rc = NetworkConfig_SetIpDhcp(HanldeNetworkConfigEvent);
 	}
 
 	if (RETCODE_OK == rc)
 	{
-		/* TODO: Currenctly only supporting WPS - push button method, as it's the
-		 * mosty handy one and doesn't need any configuration.
-		 * A configuration manager should be implemented that reads the Wifi
-		 * config from a file on the SD card.
-		 */
-		rc = WlanConnect_WPS_PBC(HandleWlanConnectEvent);
+		switch (APP_WIFI_MODE)
+		{
+		case WIFIUI_MODE_OPEN:
+			rc = WlanConnect_Open((WlanConnect_SSID_T) APP_WIFI_SSID,
+					HandleWlanConnectEvent);
+			break;
+		case WIFIUI_MODE_WEP:
+			rc = WlanConnect_WEP_Open((WlanConnect_SSID_T) APP_WIFI_SSID,
+					(WlanConnect_PassPhrase_T) APP_WIFI_PASSPHRASE,
+					strlen(APP_WIFI_PASSPHRASE), HandleWlanConnectEvent);
+			break;
+		case WIFIUI_MODE_WPA:
+			rc = WlanConnect_WPA((WlanConnect_SSID_T) APP_WIFI_SSID,
+					(WlanConnect_PassPhrase_T) APP_WIFI_PASSPHRASE,
+					HandleWlanConnectEvent);
+			break;
+		case WIFIUI_MODE_WPSPB:
+			rc = WlanConnect_WPS_PBC(HandleWlanConnectEvent);
+			break;
+		case WIFIUI_MODE_WPSPIN:
+			rc = WlanConnect_WPS_PIN(HandleWlanConnectEvent);
+			break;
+		}
 	}
 
 	if (RETCODE_OK == rc)
 	{
 		rc = WaitForSignal(ConnectionStatusChangedSignal,
-		WIFI_UI_CONNECT_TIMEOUT);
+		WIFIUI_CONNECT_TIMEOUT);
+	}
+
+	if (RETCODE_OK == rc)
+	{
+		uint32_t retry = 0;
+		NetworkConfig_IpStatus_T ipStatus = NetworkConfig_GetIpStatus();
+		while (RETCODE_OK == rc && ipStatus == NETWORKCONFIG_IP_NOT_ACQUIRED)
+		{
+			rc = WaitForSignal(NetworkStatusChangedSignal,
+			WIFIUI_CONNECT_TIMEOUT);
+			if (RETCODE_TIMEOUT == Retcode_GetCode(rc))
+			{
+				rc = RETCODE_OK;
+			}
+
+			ipStatus = NetworkConfig_GetIpStatus();
+
+			if (RETCODE_OK == rc && 2U <= retry++)
+			{
+				rc = RETCODE(RETCODE_SEVERITY_ERROR, RETCODE_TIMEOUT);
+			}
+		}
 	}
 
 	return rc;
@@ -121,6 +198,11 @@ Retcode_T WifiUi_Initialize(const CmdProcessor_T* cmdProcessor)
 	Retcode_T rc = RETCODE_OK;
 
 	rc = CreateSignal(&ConnectionStatusChangedSignal);
+
+	if (RETCODE_OK == rc)
+	{
+		rc = CreateSignal(&NetworkStatusChangedSignal);
+	}
 
 	if (RETCODE_OK == rc)
 	{
